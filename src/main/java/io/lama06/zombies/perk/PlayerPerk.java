@@ -14,9 +14,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public enum PlayerPerk implements MenuDisplayableEnum {
-    FLAME_BULLETS(Material.FIRE_CHARGE, Component.text("Flame Bullets").color(NamedTextColor.YELLOW)),
-    FROZEN_BULLETS(Material.ICE, Component.text("Frozen Bullets").color(NamedTextColor.BLUE)),
-    SPEED(Material.RABBIT_FOOT, Component.text("Speed").color(NamedTextColor.YELLOW)) {
+    FLAME_BULLETS(Material.BLAZE_POWDER, Component.text("Flame Bullets").color(NamedTextColor.YELLOW)),
+    FROZEN_BULLETS(Material.GHAST_TEAR, Component.text("Frozen Bullets").color(NamedTextColor.BLUE)),
+    SPEED(Material.SUGAR, Component.text("Speed").color(NamedTextColor.YELLOW)) {
         @Override
         public void enable(final ZombiesPlayer player) {
             player.getBukkit().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, PotionEffect.INFINITE_DURATION, 1));
@@ -27,7 +27,7 @@ public enum PlayerPerk implements MenuDisplayableEnum {
             player.getBukkit().removePotionEffect(PotionEffectType.SPEED);
         }
     },
-    QUICK_FIRE(Material.WOODEN_HOE, Component.text("Quick Fire").color(NamedTextColor.LIGHT_PURPLE)),
+    QUICK_FIRE(Material.REDSTONE, Component.text("Quick Fire").color(NamedTextColor.LIGHT_PURPLE)),
     EXTRA_HEALTH(Material.GOLDEN_APPLE, Component.text("Extra Health").color(NamedTextColor.RED)) {
         @Override
         public void enable(final ZombiesPlayer player) {

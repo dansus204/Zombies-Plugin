@@ -9,6 +9,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 public final class DamageZombieAfterAttackSystem implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -27,7 +28,21 @@ public final class DamageZombieAfterAttackSystem implements Listener {
             return;
         }
         living.setNoDamageTicks(0);
-        living.damage(event.getDamage(), event.getPlayer().getBukkit());
+        final double damage = event.getDamage();
+        final Vector velocity = living.getVelocity();
+        if (event.isCritical()) {
+            living.damage(0, event.getPlayer().getBukkit());
+            final double hp = living.getHealth();
+            living.setHealth(hp > damage? hp - damage : 0);
+        } else {
+            living.damage(damage, event.getPlayer().getBukkit());
+        }
+        if (event.getDirection() != null) {
+            living.setVelocity(event.getDirection());
+        }
+        if (zombie.getData().kbImmune) {
+            living.setVelocity(velocity);
+        }
         if (event.isFreeze()) {
             living.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 7 * 20, 2));
         }

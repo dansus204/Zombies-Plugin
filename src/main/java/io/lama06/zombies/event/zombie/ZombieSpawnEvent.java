@@ -1,5 +1,6 @@
 package io.lama06.zombies.event.zombie;
 
+import io.lama06.zombies.Window;
 import io.lama06.zombies.util.HandlerListGetter;
 import io.lama06.zombies.zombie.Zombie;
 import io.lama06.zombies.zombie.ZombieData;

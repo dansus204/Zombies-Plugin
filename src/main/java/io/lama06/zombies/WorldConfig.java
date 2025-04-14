@@ -2,6 +2,8 @@ package io.lama06.zombies;
 
 import io.lama06.zombies.menu.*;
 import io.lama06.zombies.perk.PerkMachine;
+import io.lama06.zombies.util.Graph;
+import io.lama06.zombies.util.GraphPoint;
 import io.lama06.zombies.util.PositionUtil;
 import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.Component;
@@ -12,6 +14,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class WorldConfig implements CheckableConfig {
     public String startArea = "";
@@ -21,10 +24,13 @@ public final class WorldConfig implements CheckableConfig {
     public final List<ArmorShop> armorShops = new ArrayList<>();
     public final List<LuckyChest> luckyChests = new ArrayList<>();
     public final List<PerkMachine> perkMachines = new ArrayList<>();
+    public final List<GraphPoint> graphPoints = new ArrayList<>();
     public PowerSwitch powerSwitch;
+    public UltimateMachine ultimateMachine;
     public BlockPosition teamMachine;
     public boolean autoStartStop;
     public boolean preventBuilding;
+    public transient Graph graph;
 
     @Override
     public void check() throws InvalidConfigException {
@@ -35,6 +41,7 @@ public final class WorldConfig implements CheckableConfig {
         InvalidConfigException.checkList(armorShops, true, "armor shops");
         InvalidConfigException.checkList(luckyChests, true, "lucky chests");
         InvalidConfigException.checkList(perkMachines, true, "perk machines");
+        InvalidConfigException.checkList(perkMachines, true, "tracking points");
         if (powerSwitch != null) {
             powerSwitch.check();
         }
@@ -84,7 +91,7 @@ public final class WorldConfig implements CheckableConfig {
                                 Component.text("Windows"),
                                 windows,
                                 Material.ACACIA_DOOR,
-                                window -> Component.text("Window in: " + (window.area.isEmpty() ? "_" : window.area)),
+                                window -> Component.text("Window in: " + (window.area.isEmpty() ? "_" : window.area) + ". Position: " + window.repairArea + " Point " + window.closestPointId),
                                 Window::new,
                                 window -> window.openMenu(player, reopen),
                                 reopen
@@ -148,12 +155,37 @@ public final class WorldConfig implements CheckableConfig {
                         )
                 ),
                 new SelectionEntry(
+                        Component.text("Tracking Points"),
+                        Material.ARROW,
+                        () -> ListConfigMenu.open(
+                                player,
+                                Component.text("Tracking Points"),
+                                graphPoints,
+                                Material.ARROW,
+                                point -> Component.text("Point: " + point.getDisplayName()),
+                                () -> new GraphPoint(graphPoints.getLast().id + 1, graphPoints.getLast().area, graphPoints.getLast().id),
+                                point -> point.openMenu(player, reopen),
+                                reopen
+                        )
+                ),
+
+                new SelectionEntry(
                         Component.text("Power Switch" + (powerSwitch == null ? ": null" : "")),
                         Material.LEVER,
                         () -> (powerSwitch != null ? powerSwitch : (powerSwitch = new PowerSwitch())).openMenu(player, reopen),
                         Component.text("Remove").color(NamedTextColor.RED),
                         () -> {
                             powerSwitch = null;
+                            reopen.run();
+                        }
+                ),
+                new SelectionEntry(
+                        Component.text("Ultimate Machine" + (ultimateMachine == null ? ": null" : "")),
+                        Material.LEVER,
+                        () -> (ultimateMachine != null ? ultimateMachine : (ultimateMachine = new UltimateMachine())).openMenu(player, reopen),
+                        Component.text("Remove").color(NamedTextColor.RED),
+                        () -> {
+                            ultimateMachine = null;
                             reopen.run();
                         }
                 ),

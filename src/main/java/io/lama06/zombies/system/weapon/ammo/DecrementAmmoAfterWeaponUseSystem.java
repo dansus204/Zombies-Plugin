@@ -22,7 +22,9 @@ public final class DecrementAmmoAfterWeaponUseSystem implements Listener {
         if (clip == 0) {
             return;
         }
-        ammoComponent.set(AmmoData.CLIP, clip - 1);
-        Bukkit.getPluginManager().callEvent(new WeaponClipChangeEvent(weapon, clip, clip - 1));
+        final int decrementNumber = weapon.getData().shoot.delay() == 0? 1 : weapon.getData().shoot.bullets();
+
+        ammoComponent.set(AmmoData.CLIP, clip - decrementNumber);
+        Bukkit.getPluginManager().callEvent(new WeaponClipChangeEvent(weapon, clip, clip - decrementNumber));
     }
 }

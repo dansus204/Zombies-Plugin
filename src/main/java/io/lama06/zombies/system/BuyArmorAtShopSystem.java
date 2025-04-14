@@ -1,6 +1,7 @@
 package io.lama06.zombies.system;
 
 import io.lama06.zombies.ArmorShop;
+import io.lama06.zombies.ZombiesEntity;
 import io.lama06.zombies.ZombiesWorld;
 import io.lama06.zombies.event.player.PlayerGoldChangeEvent;
 import io.lama06.zombies.ZombiesPlayer;
@@ -8,31 +9,34 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public final class BuyArmorAtShopSystem implements Listener {
     @EventHandler
-    private void onPlayerInteract(final PlayerInteractEvent event) {
-        if (!event.getAction().isLeftClick()) {
+    private void onPlayerInteract(final PlayerInteractAtEntityEvent event) {
+        if (event.getRightClicked().getType() != EntityType.ARMOR_STAND) {
             return;
         }
-        final Block clickedBlock = event.getClickedBlock();
-        if (clickedBlock == null) {
-            return;
-        }
+
         final ZombiesPlayer player = new ZombiesPlayer(event.getPlayer());
         final ZombiesWorld world = player.getWorld();
         if (!world.isGameRunning()) {
             return;
         }
+        final ZombiesEntity entity = new ZombiesEntity(event.getRightClicked());
+        if (!entity.get(ZombiesEntity.IS_NOT_VANILLA)) {
+            return;
+        }
+        final int shopId = entity.get(ZombiesEntity.SHOP_ID);
         final ArmorShop armorShop = world.getConfig().armorShops.stream()
-                .filter(shop -> shop.position.equals(clickedBlock.getLocation().toBlock()))
+                .filter(shop -> shop.id == shopId)
                 .findAny().orElse(null);
         if (armorShop == null) {
             return;
@@ -57,6 +61,9 @@ public final class BuyArmorAtShopSystem implements Listener {
         Bukkit.getPluginManager().callEvent(new PlayerGoldChangeEvent(player, gold, newGold));
         for (final EquipmentSlot equipmentSlot : armorShop.part.getEquipmentSlots()) {
             final ItemStack item = new ItemStack(armorShop.quality.materials.get(equipmentSlot));
+            final ItemMeta meta = item.getItemMeta();
+            meta.setUnbreakable(true);
+            item.setItemMeta(meta);
             inventory.setItem(equipmentSlot, item);
         }
         player.sendMessage(Component.text("Successfully bought the armor").color(NamedTextColor.GREEN));

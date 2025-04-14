@@ -1,6 +1,7 @@
 package io.lama06.zombies.system;
 
 import io.lama06.zombies.WeaponShop;
+import io.lama06.zombies.ZombiesEntity;
 import io.lama06.zombies.ZombiesWorld;
 import io.lama06.zombies.event.player.PlayerGoldChangeEvent;
 import io.lama06.zombies.event.weapon.WeaponAmmoChangeEvent;
@@ -11,27 +12,32 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public final class InteractWithWeaponShopSystem implements Listener {
     @EventHandler
-    private void onPlayerInteract(final PlayerInteractEvent event) {
-        if (!event.getAction().isLeftClick()) {
+    private void onPlayerInteract(final PlayerInteractAtEntityEvent event) {
+        if (event.getRightClicked().getType() != EntityType.ARMOR_STAND) {
             return;
         }
-        final Block clickedBlock = event.getClickedBlock();
-        if (clickedBlock == null) {
-            return;
-        }
+
         final ZombiesPlayer player = new ZombiesPlayer(event.getPlayer());
         final ZombiesWorld world = player.getWorld();
         if (!world.isGameRunning()) {
             return;
         }
+        final ZombiesEntity entity = new ZombiesEntity(event.getRightClicked());
+        if (!entity.get(ZombiesEntity.IS_NOT_VANILLA)) {
+            return;
+        }
+        final int shopId = entity.get(ZombiesEntity.SHOP_ID);
+
         final WeaponShop weaponShop = world.getConfig().weaponShops.stream()
-                .filter(shop -> shop.position.equals(clickedBlock.getLocation().toBlock()))
+                .filter(shop -> shop.id == shopId)
                 .findAny().orElse(null);
         if (weaponShop == null) {
             return;

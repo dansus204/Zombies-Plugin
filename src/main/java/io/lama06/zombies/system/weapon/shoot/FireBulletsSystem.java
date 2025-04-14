@@ -1,5 +1,6 @@
 package io.lama06.zombies.system.weapon.shoot;
 
+import io.lama06.zombies.ZombiesPlugin;
 import io.lama06.zombies.event.player.PlayerAttackZombieEvent;
 import io.lama06.zombies.event.weapon.WeaponShootEvent;
 import io.lama06.zombies.ZombiesPlayer;
@@ -9,6 +10,9 @@ import io.lama06.zombies.weapon.Weapon;
 import io.lama06.zombies.zombie.Zombie;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,18 +29,18 @@ import java.util.random.RandomGenerator;
 public final class FireBulletsSystem implements Listener {
     @EventHandler
     private void onPlayerAttackEntity(final PrePlayerAttackEntityEvent event) {
-        onLeftClick(event.getPlayer());
+        onRightClick(event.getPlayer());
     }
 
     @EventHandler
     private void onPlayerInteract(final PlayerInteractEvent event) {
-        if (!event.getAction().isLeftClick()) {
+        if (!event.getAction().isRightClick()) {
             return;
         }
-        onLeftClick(event.getPlayer());
+        onRightClick(event.getPlayer());
     }
 
-    private void onLeftClick(final Player bukkit) {
+    private void onRightClick(final Player bukkit) {
         final ZombiesPlayer player = new ZombiesPlayer(bukkit);
         if (!player.getWorld().isGameRunning() || !player.isAlive()) {
             return;
@@ -62,26 +66,75 @@ public final class FireBulletsSystem implements Listener {
         if (!new WeaponShootEvent(weapon, bulletsList).callEvent()) {
             return;
         }
-        for (final WeaponShootEvent.Bullet bullet : bulletsList) {
-            detectShotAtZombie(player, weapon, bullet);
+        if (weapon.getData().sound != null && shootData.delay() == 0) {
+            player.playSound(weapon.getData().sound.sound());
         }
+
+        for (int i = 0; i < bulletsList.size(); ++i) {
+
+            final int finalI = i;
+            Bukkit.getScheduler().scheduleSyncDelayedTask(ZombiesPlugin.INSTANCE,
+                                                          ()-> {
+                                                              detectShotAtZombie(player, weapon, bulletsList.get(finalI));
+                                                              if (weapon.getData().sound != null && shootData.delay() != 0) {
+                                                                  player.playSound(weapon.getData().sound.sound());
+                                                              }
+                                                          }
+                                                                  ,
+                                                          shootData.delay() * i
+            );
+        }
+
+
     }
 
     private void detectShotAtZombie(final ZombiesPlayer player, final Weapon weapon, final WeaponShootEvent.Bullet bullet) {
-        final RayTraceResult ray = player.getWorld().getBukkit().rayTraceEntities(
-                player.getBukkit().getEyeLocation(),
-                bullet.direction(),
-                50,
-                entity -> !entity.equals(player.getBukkit())
-        );
-        if (ray == null) {
-            return;
+        Vector hitPos = null;
+        Entity lastEntity = null;
+        final int pierceNum = weapon.getData().shoot.pierce();
+        for (int i = 0; i < pierceNum; ++i) {
+            final Entity finalLastEntity = lastEntity;
+            final RayTraceResult ray = player.getWorld().getBukkit().rayTrace(
+                    hitPos == null? player.getBukkit().getEyeLocation() : new Location(
+                            player.getBukkit().getWorld(), hitPos.getX(), hitPos.getY(), hitPos.getZ()),
+                    bullet.direction(),
+                    64,
+                    FluidCollisionMode.NEVER,
+                    true,
+                    0,
+                    rayTraceEntity -> !rayTraceEntity.equals(player.getBukkit()) &&
+                            !(rayTraceEntity.isDead()) && !(rayTraceEntity.equals(finalLastEntity)),
+                    rayTraceBlock -> !rayTraceBlock.getType().equals(Material.OAK_SLAB) &&
+                            !rayTraceBlock.getType().equals(Material.IRON_BARS)
+                    );
+            if (ray == null || ray.getHitBlock() != null) {
+                return;
+            }
+            final Entity entity = ray.getHitEntity();
+            lastEntity = entity;
+            final Zombie zombie = new Zombie(entity);
+            if (!zombie.isZombie()) {
+                return;
+            }
+            final double height = entity.getHeight();
+            final double pos = entity.getY();
+            hitPos = ray.getHitPosition();
+            final boolean isCritical = (hitPos.getY() > pos + height*0.8);
+            Bukkit.getPluginManager().callEvent(new PlayerAttackZombieEvent(weapon, zombie, isCritical, bullet.direction()));
+            
+            final int chain = weapon.getData().shoot.chain_reaction();
+            if (chain != 0) {
+                List<Entity> nearEntities = entity.getNearbyEntities(8, 2, 8).stream().filter(
+                        nearEntity -> (new Zombie(nearEntity)).isZombie() && !nearEntity.isDead()
+                ).toList().subList(0, chain);
+                for (int j = 0; j < nearEntities.size() - 1; ++j) {
+                    Bukkit.getPluginManager().callEvent(new PlayerAttackZombieEvent(
+                            weapon, new Zombie(nearEntities.get(j + 1)), false,
+                            nearEntities.get(j + 1).getLocation().toVector().subtract(nearEntities.get(j).getLocation().toVector()).normalize()
+                                                        )
+                    );
+                }
+            }
         }
-        final Entity entity = ray.getHitEntity();
-        final Zombie zombie = new Zombie(entity);
-        if (!zombie.isZombie()) {
-            return;
-        }
-        Bukkit.getPluginManager().callEvent(new PlayerAttackZombieEvent(weapon, zombie));
     }
 }

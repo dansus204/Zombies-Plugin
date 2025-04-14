@@ -38,6 +38,6 @@ public final class AttackMeleeSystem implements Listener {
         if (!zombie.isZombie()) {
             return;
         }
-        Bukkit.getPluginManager().callEvent(new PlayerAttackZombieEvent(weapon, zombie));
+        Bukkit.getPluginManager().callEvent(new PlayerAttackZombieEvent(weapon, zombie, false, null));
     }
 }

@@ -5,6 +5,8 @@ import io.lama06.zombies.event.GameEndEvent;
 import io.lama06.zombies.ZombiesPlayer;
 import io.lama06.zombies.zombie.Zombie;
 import org.bukkit.GameMode;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,7 +31,7 @@ public final class CleanupAfterGameSystem implements Listener {
 
         world.remove(ZombiesWorld.ROUND);
         world.remove(ZombiesWorld.REMAINING_ZOMBIES);
-        world.remove(ZombiesWorld.NEXT_ZOMBIE_TIME);
+        world.remove(ZombiesWorld.NEXT_WAVE_TIME);
         world.remove(ZombiesWorld.REACHABLE_AREAS);
         world.remove(ZombiesWorld.OPEN_DOORS);
         world.remove(ZombiesWorld.POWER_SWITCH);
@@ -57,6 +59,13 @@ public final class CleanupAfterGameSystem implements Listener {
         final List<Zombie> zombies = world.getZombies();
         for (final Zombie zombie : zombies) {
             zombie.getEntity().remove();
+        }
+
+        for (final Entity entity : world.getBukkit().getEntities()) {
+            final ZombiesEntity zombiesEntity = new ZombiesEntity(entity);
+            if (zombiesEntity.isNotVanilla()) {
+                entity.remove();
+            }
         }
     }
 }

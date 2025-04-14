@@ -17,6 +17,7 @@ public final class ArmorShop implements CheckableConfig {
     public int price = 100;
     public Part part = Part.UPPER_BODY;
     public Quality quality = Quality.LEATHER;
+    public int id;
 
     @Override
     public void check() throws InvalidConfigException {
@@ -85,6 +86,21 @@ public final class ArmorShop implements CheckableConfig {
                                     this.quality = quality;
                                     reopen.run();
                                 }
+                        )
+                ),
+                new SelectionEntry(
+                        Component.text("Id: " + id),
+                        Material.GREEN_DYE,
+                        () -> InputMenu.open(
+                                player,
+                                Component.text("Id"),
+                                id,
+                                new IntegerInputType(),
+                                id -> {
+                                    this.id = id;
+                                    reopen.run();
+                                },
+                                reopen
                         )
                 )
         );

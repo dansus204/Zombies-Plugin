@@ -5,17 +5,19 @@ import io.lama06.zombies.event.GameEndEvent;
 import io.lama06.zombies.event.GameStartEvent;
 import io.lama06.zombies.event.zombie.ZombieSpawnEvent;
 import io.lama06.zombies.perk.GlobalPerk;
+import io.lama06.zombies.util.GraphDoorLink;
 import io.lama06.zombies.zombie.Zombie;
 import io.lama06.zombies.zombie.ZombieType;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.*;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 
 import java.util.Comparator;
@@ -32,7 +34,16 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
     public static final AttributeId<Integer> GAME_ID = new AttributeId<>("game_id", PersistentDataType.INTEGER);
     public static final AttributeId<Integer> ROUND = new AttributeId<>("round", PersistentDataType.INTEGER);
     public static final AttributeId<Integer> REMAINING_ZOMBIES = new AttributeId<>("remaining_zombies", PersistentDataType.INTEGER);
+
     public static final AttributeId<Integer> NEXT_ZOMBIE_TIME = new AttributeId<>("next_zombie", PersistentDataType.INTEGER);
+    public static final AttributeId<Integer> NEXT_WAVE_TIME = new AttributeId<>("next_wave", PersistentDataType.INTEGER);
+    public static final AttributeId<Integer> WAVE = new AttributeId<>("wave", PersistentDataType.INTEGER);
+    public static final AttributeId<Integer> ANGER_TIMER = new AttributeId<>("anger_timer", PersistentDataType.INTEGER);
+    public static final AttributeId<Integer> CHECK_TIMER = new AttributeId<>("check_timer", PersistentDataType.INTEGER);
+    public static final AttributeId<Integer> INDEX_UPDATE_TIMER = new AttributeId<>("index_update_timer", PersistentDataType.INTEGER);
+    public static final AttributeId<Integer> HP_BAR_TIMER = new AttributeId<>("hp_bar_timer", PersistentDataType.INTEGER);
+
+
     public static final AttributeId<Boolean> BOSS_SPAWNED = new AttributeId<>("boss_spawned", PersistentDataType.BOOLEAN);
     public static final AttributeId<Boolean> POWER_SWITCH = new AttributeId<>("power_switch", PersistentDataType.BOOLEAN);
     public static final AttributeId<List<String>> REACHABLE_AREAS = new AttributeId<>("reachable_areas", PersistentDataType.LIST.strings());
@@ -40,6 +51,8 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
     public static final AttributeId<Integer> DRAGONS_WRATH_USED = new AttributeId<>("dragons_wrath_used", PersistentDataType.INTEGER);
 
     public static final ComponentId PERKS_COMPONENT = new ComponentId("perks");
+
+    public static final ComponentId GRAPH = new ComponentId("graph");
 
     private final World world;
 
@@ -84,8 +97,43 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
         final Zombie zombie = new Zombie(entity);
         zombie.set(Zombie.IS_ZOMBIE, true);
         zombie.set(Zombie.TYPE, type);
+        zombie.set(Zombie.IN_WINDOW, false);
+
+
+
+
+        //zombie.set(Zombie.CLOSEST_POINT, getConfig().graph.findClosestPointIndex(location));
         Bukkit.getPluginManager().callEvent(new ZombieSpawnEvent(zombie, type.data));
+
+        if (type.data.isBoss) {
+            final ArmorStand stand = (ArmorStand) world.spawnEntity(location, EntityType.ARMOR_STAND);
+            stand.setNoPhysics(true);
+            stand.setGravity(false);
+            stand.setInvisible(true);
+            stand.setInvulnerable(true);
+            stand.setCustomNameVisible(true);
+
+            entity.setCustomNameVisible(true);
+            entity.customName(net.kyori.adventure.text.Component.text(type.name()));
+
+            Bukkit.getScheduler().runTaskTimer(
+                    ZombiesPlugin.INSTANCE,
+                    () -> updateHealthBar(zombie, stand),
+                    1, 1
+
+            );
+        }
         return zombie;
+    }
+
+    public void updateHealthBar(final Zombie zombie, final ArmorStand stand) {
+        final int hpParts = (int) (((LivingEntity) zombie.getEntity()).getHealth() / zombie.getData().health * 20);
+        final String string = "|".repeat(hpParts) + ".".repeat(20 - hpParts);
+        stand.customName(net.kyori.adventure.text.Component.text(string).color(NamedTextColor.RED));
+        stand.teleport(zombie.getEntity().getLocation());
+        if (hpParts == 0) {
+            stand.remove();
+        }
     }
 
     public List<ZombiesPlayer> getAlivePlayers() {
@@ -130,6 +178,23 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
         return window.spawnLocation.toBukkit(getBukkit());
     }
 
+    public void updateGraph(final String area, final List<GraphDoorLink> links) {
+        final WorldConfig config = getConfig();
+        if (config == null) {
+            return;
+        }
+        config.graphPoints.forEach(graphPoint -> {
+            if (area.equals(graphPoint.area)) {
+                graphPoint.setLocation(world);
+                config.graph.addPoint(graphPoint.copy());
+            }
+        });
+        if (links != null) {
+            links.forEach(link -> config.graph.addLink(link.first_id, link.second_id));
+        }
+        config.graph.calcFinalDistance();
+    }
+
     private Window getNearestWindowToPlayer(final ZombiesPlayer player) {
         return getAvailableWindows().stream().min(Comparator.comparingDouble(window -> {
             final Vector windowVector = window.spawnLocation.toBukkit(player.getBukkit().getWorld()).toVector();
@@ -140,6 +205,7 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
             return Math.sqrt(xDiff*xDiff + yDiff*yDiff + zDiff*zDiff);
         })).orElse(null);
     }
+
 
     @Override
     protected StorageSession startSession() {

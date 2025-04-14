@@ -25,7 +25,7 @@ public final class StartNextRoundSystem implements Listener {
             final SpawnRate currentSpawnRate = SpawnRate.SPAWN_RATES.get(currentRound - 1);
             final int remainingZombies = world.get(ZombiesWorld.REMAINING_ZOMBIES);
             final boolean bossSpawned = world.get(ZombiesWorld.BOSS_SPAWNED);
-            if (remainingZombies > 0 || (currentSpawnRate.boss() != null && !bossSpawned)) {
+            if (remainingZombies > 0 || (currentSpawnRate.waves().getLast().boss() != null && !bossSpawned)) {
                 continue;
             }
             final int nextRound = currentRound + 1;
@@ -35,7 +35,8 @@ public final class StartNextRoundSystem implements Listener {
             }
             final SpawnRate spawnRate = SpawnRate.SPAWN_RATES.get(nextRound - 1);
             world.set(ZombiesWorld.ROUND, nextRound);
-            world.set(ZombiesWorld.NEXT_ZOMBIE_TIME, spawnRate.spawnDelay());
+            world.set(ZombiesWorld.WAVE, 0);
+            world.set(ZombiesWorld.NEXT_WAVE_TIME, spawnRate.waves().getFirst().waveDelay());
             world.set(ZombiesWorld.REMAINING_ZOMBIES, spawnRate.getNumberOfZombies());
             world.set(ZombiesWorld.BOSS_SPAWNED, false);
             world.sendMessage(Component.text("Round " + nextRound));

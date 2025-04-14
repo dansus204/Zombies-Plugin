@@ -1,9 +1,12 @@
 package io.lama06.zombies.zombie;
 
+import org.bukkit.Color;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.potion.PotionEffect;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,13 +18,21 @@ public final class ZombieData {
     public Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
     public BreakWindowData breakWindow;
     public boolean fireImmune;
+    public boolean kbImmune;
+    public boolean isBoss;
     public LaserAttackData laserAttack;
     public FireAttackData fireAttack;
     public ExplosionAttackData explosionAttack;
     public boolean fireTrail;
+    public PotionEffect potionEffect;
     public DescendantsData descendants;
     public FireBallAttackData fireBallAttack;
     public Consumer<? super Entity> initializer;
+
+    public ZombieData addPotionEffect(final PotionEffect potionEffect) {
+        this.potionEffect = potionEffect;
+        return this;
+    }
 
     public ZombieData setEntity(final EntityType entity) {
         this.entity = entity;
@@ -33,7 +44,12 @@ public final class ZombieData {
         return this;
     }
 
-    public ZombieData addEquipment(final EquipmentSlot slot, final ItemStack item) {
+    public ZombieData addEquipment(final EquipmentSlot slot, final ItemStack item, final Color color) {
+        if (color != null) {
+            final LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
+            meta.setColor(color);
+            item.setItemMeta(meta);
+        }
         equipment.put(slot, item);
         return this;
     }
@@ -45,6 +61,16 @@ public final class ZombieData {
 
     public ZombieData setFireImmune(final boolean fireImmune) {
         this.fireImmune = fireImmune;
+        return this;
+    }
+
+    public ZombieData setKbImmune(final boolean kbImmune) {
+        this.kbImmune = kbImmune;
+        return this;
+    }
+
+    public ZombieData setBoss(final boolean isBoss) {
+        this.isBoss = isBoss;
         return this;
     }
 

@@ -13,11 +13,13 @@ public final class WeaponShop implements CheckableConfig {
     public WeaponType weaponType = WeaponType.RIFLE;
     public int purchasePrice = 500;
     public int refillPrice = 250;
+    public int id;
 
     @Override
     public void check() throws InvalidConfigException {
         InvalidConfigException.mustBeSet(position, "position");
         InvalidConfigException.mustBeSet(weaponType, "weapon type");
+        InvalidConfigException.mustBeSet(weaponType, "id");
     }
 
     public void openMenu(final Player player, final Runnable callback) {
@@ -82,7 +84,23 @@ public final class WeaponShop implements CheckableConfig {
                                 },
                                 reopen
                         )
+                ),
+                new SelectionEntry(
+                        Component.text("Id: " + id),
+                        Material.GREEN_DYE,
+                        () -> InputMenu.open(
+                                player,
+                                Component.text("Id"),
+                                id,
+                                new IntegerInputType(),
+                                id -> {
+                                    this.id = id;
+                                    reopen.run();
+                                },
+                                reopen
+                        )
                 )
+
         );
     }
 }

@@ -14,6 +14,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -31,6 +32,7 @@ public final class ZombiesPlayer extends Storage implements ForwardingAudience {
     public static final AttributeId<Integer> GAME_ID = new AttributeId<>("game_id", PersistentDataType.INTEGER);
     public static final AttributeId<Integer> GOLD = new AttributeId<>("gold", PersistentDataType.INTEGER);
     public static final AttributeId<Integer> KILLS = new AttributeId<>("kills", PersistentDataType.INTEGER);
+    public static final AttributeId<Integer> CLOSEST_POINT = new AttributeId<>("closest_point", PersistentDataType.INTEGER);
 
     private final Player player;
 
@@ -69,6 +71,7 @@ public final class ZombiesPlayer extends Storage implements ForwardingAudience {
     public Weapon giveWeapon(final int slot, final WeaponType type) {
         final ItemStack item = new ItemStack(type.data.material);
         final ItemMeta meta = item.getItemMeta();
+        meta.setEnchantmentGlintOverride(type.data.isEnchanted);
         meta.displayName(type.data.displayName);
         item.setItemMeta(meta);
         final PlayerInventory inventory = player.getInventory();
@@ -150,6 +153,10 @@ public final class ZombiesPlayer extends Storage implements ForwardingAudience {
         final int newGold = currentGold - gold;
         set(GOLD, newGold);
         Bukkit.getPluginManager().callEvent(new PlayerGoldChangeEvent(this, currentGold, newGold));
+    }
+
+    public Location getLocation() {
+        return this.player.getLocation();
     }
 
     @Override

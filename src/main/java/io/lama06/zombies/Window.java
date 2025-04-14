@@ -4,7 +4,9 @@ import io.lama06.zombies.menu.*;
 import io.lama06.zombies.util.BlockArea;
 import io.lama06.zombies.util.EntityPosition;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -13,6 +15,7 @@ public final class Window implements CheckableConfig {
     public EntityPosition spawnLocation;
     public BlockArea blocks;
     public BlockArea repairArea;
+    public int closestPointId;
 
     public void open(final ZombiesWorld world) {
         blocks.fill(world.getBukkit(), Bukkit.createBlockData(Material.AIR));
@@ -90,7 +93,19 @@ public final class Window implements CheckableConfig {
                                     reopen.run();
                                 }
                         )
-                )
+                ),
+                new SelectionEntry(Component.text("Closest Point: " + closestPointId), Material.ARROW, () -> InputMenu.open(
+                        player,
+                        Component.text("Closest point").color(NamedTextColor.GOLD),
+                        closestPointId,
+                        new IntegerInputType(),
+                        id -> {
+                            closestPointId = id;
+                            openMenu(player, callback);
+                        },
+                        () -> openMenu(player, callback)
+                ))
         );
+
     }
 }

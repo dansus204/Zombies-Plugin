@@ -21,6 +21,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.SlimeSplitEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -163,6 +164,16 @@ public final class PreventEventsSystem implements Listener {
             return;
         }
         if (event.getClickedInventory() == null || !event.getClickedInventory().equals(player.getBukkit().getInventory())) {
+            return;
+        }
+        event.setCancelled(true);
+    }
+
+
+    @EventHandler
+    private void onSlimeSplit(final SlimeSplitEvent event) {
+        final ZombiesWorld world = new ZombiesWorld(event.getEntity().getWorld());
+        if (!world.isZombiesWorld()) {
             return;
         }
         event.setCancelled(true);

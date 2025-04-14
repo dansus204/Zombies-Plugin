@@ -2,10 +2,15 @@ package io.lama06.zombies;
 
 import io.lama06.zombies.menu.*;
 import io.lama06.zombies.util.BlockArea;
+import io.lama06.zombies.util.GraphDoorLink;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Door implements CheckableConfig {
     public String area1 = "";
@@ -14,6 +19,7 @@ public final class Door implements CheckableConfig {
     public BlockArea position;
     public BlockArea templateOpen;
     public BlockArea templateClosed;
+    public List<GraphDoorLink> links = new ArrayList<>();
 
     public void setOpen(final ZombiesWorld world, final boolean open) {
         if (open && templateOpen == null) {
@@ -29,6 +35,7 @@ public final class Door implements CheckableConfig {
         InvalidConfigException.mustBeSet(area2, "second area");
         InvalidConfigException.mustBeSet(position, "position");
         InvalidConfigException.mustBeSet(templateClosed, "template closed");
+        InvalidConfigException.checkList(links, true, "links");
 
         if (area1.equals(area2)) {
             throw new InvalidConfigException("the first area equals the second area");
@@ -42,6 +49,7 @@ public final class Door implements CheckableConfig {
     }
 
     public void openMenu(final Player player, final Runnable callback) {
+        final Runnable reopen = () -> openMenu(player, callback);
         SelectionMenu.open(
                 player,
                 Component.text("Edit Door"),
@@ -53,9 +61,9 @@ public final class Door implements CheckableConfig {
                         new TextInputType(),
                         area1 -> {
                             this.area1 = area1;
-                            openMenu(player, callback);
+                            reopen.run();
                         },
-                        () -> openMenu(player, callback)
+                        reopen
                 )),
                 new SelectionEntry(Component.text("Second Area: " + area2), Material.SPRUCE_DOOR, () -> InputMenu.open(
                         player,
@@ -118,6 +126,21 @@ public final class Door implements CheckableConfig {
                                     openMenu(player, callback);
                                 }
 
+                        )
+                ),
+                new SelectionEntry(
+                        Component.text("Tracking point links"),
+                        Material.ARROW,
+                        () -> ListConfigMenu.open(
+                                player,
+                                Component.text("Tracking point links"),
+                                links,
+                                Material.ARROW,
+                                link -> Component.text("Link from " + link.first_id +
+                                                               " to " + link.second_id + ". Distance: " + link.distance),
+                                GraphDoorLink::new,
+                                link -> link.openMenu(player, reopen),
+                                reopen
                         )
                 )
         );

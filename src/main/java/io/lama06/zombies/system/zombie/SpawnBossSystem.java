@@ -4,9 +4,13 @@ import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import io.lama06.zombies.SpawnRate;
 import io.lama06.zombies.ZombiesPlugin;
 import io.lama06.zombies.ZombiesWorld;
+import io.lama06.zombies.zombie.Zombie;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -16,7 +20,7 @@ public final class SpawnBossSystem implements Listener {
         for (final ZombiesWorld gameWorld : ZombiesPlugin.INSTANCE.getGameWorlds()) {
             final int currentRound = gameWorld.get(ZombiesWorld.ROUND);
             final SpawnRate currentSpawnRate = SpawnRate.SPAWN_RATES.get(currentRound - 1);
-            if (currentSpawnRate.boss() == null) {
+            if (currentSpawnRate.waves().getLast().boss() == null) {
                 continue;
             }
             final int remainingZombies = gameWorld.get(ZombiesWorld.REMAINING_ZOMBIES);
@@ -28,10 +32,16 @@ public final class SpawnBossSystem implements Listener {
                 continue;
             }
             final Location spawnPoint = gameWorld.getNextZombieSpawnPoint();
-            gameWorld.spawnZombie(spawnPoint, currentSpawnRate.boss());
-            final String bossName = currentSpawnRate.boss().name().replace('_', ' ');
+            gameWorld.spawnZombie(spawnPoint, currentSpawnRate.waves().getLast().boss());
+
+            final String bossName = currentSpawnRate.waves().getLast().boss().name().replace('_', ' ');
             gameWorld.sendMessage(Component.text(bossName + " has spawned!").color(NamedTextColor.RED));
             gameWorld.set(ZombiesWorld.BOSS_SPAWNED, true);
+
         }
     }
+
+
 }
+
+

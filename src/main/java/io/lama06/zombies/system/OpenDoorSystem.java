@@ -44,19 +44,24 @@ public final class OpenDoorSystem implements Listener {
                 player.sendMessage(Component.text("You don't have enough gold to open this door").color(NamedTextColor.RED));
                 return;
             }
-            world.showTitle(Title.title(Component.text(player.getBukkit().getName() + " opened a door"), Component.empty()));
             door.setOpen(world, true);
             player.set(ZombiesPlayer.GOLD, gold - door.gold);
             Bukkit.getPluginManager().callEvent(new PlayerGoldChangeEvent(player, gold, gold - door.gold));
 
             final String newArea = reachableAreas.contains(door.area1) ? door.area2 : door.area1;
+            world.showTitle(Title.title(Component.text(player.getBukkit().getName() + " opened " + newArea), Component.empty()));
+
             final ArrayList<String> newAreas = new ArrayList<>(reachableAreas);
-            newAreas.add(newArea);
-            world.set(ZombiesWorld.REACHABLE_AREAS, newAreas);
+            if (!newAreas.contains(newArea)) {
+                newAreas.add(newArea);
+                world.set(ZombiesWorld.REACHABLE_AREAS, newAreas);
+            }
 
             final List<Integer> newDoorIndizes = new ArrayList<>(doorIndizes);
             newDoorIndizes.add(i);
             world.set(ZombiesWorld.OPEN_DOORS, newDoorIndizes);
+
+            world.updateGraph(newArea, door.links);
         }
     }
 }

@@ -13,6 +13,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -20,6 +21,8 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.TileState;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Switch;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.block.sign.Side;
@@ -27,7 +30,12 @@ import org.bukkit.block.sign.SignSide;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.util.Vector;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,6 +74,9 @@ public final class ZombiesCommandExecutor implements TabExecutor {
             case "cancel" -> cancel(sender);
             case "placeSigns" -> placeSigns(sender, remainingArgs);
             case "dumpWorldConfig" -> dumpWorldConfig(sender);
+            case "placeHolograms" -> placeHolograms(sender, remainingArgs);
+            case "removeHolograms" -> removeHolograms(sender);
+            case "removeDisplays" -> removeDisplays(sender);
             default -> sender.sendMessage(Component.text("unknown command").color(NamedTextColor.RED));
         }
 
@@ -91,7 +102,8 @@ public final class ZombiesCommandExecutor implements TabExecutor {
                 "stop",
                 "giveGold",
                 "giveWeapon",
-                "spawnZombie"
+                "spawnZombie",
+                "placeHolograms"
         );
     }
 
@@ -181,6 +193,7 @@ public final class ZombiesCommandExecutor implements TabExecutor {
             config = ConfigManager.createGson().fromJson(new InputStreamReader(resource), WorldConfig.class);
         } catch (final JsonParseException e) {
             sender.sendMessage(Component.text("Template malformed. Please contact the plugins's author."));
+            sender.sendMessage(Component.text(e.getMessage()));
             return;
         }
         globalConfig.worlds.put(world.getBukkit().getName(), config);
@@ -194,7 +207,7 @@ public final class ZombiesCommandExecutor implements TabExecutor {
         }
         final ZombiesWorld world = new ZombiesWorld(player.getWorld());
         if (!world.isZombiesWorld()) {
-            final Component msg = Component.text("You muse first configure this world.").color(NamedTextColor.RED)
+            final Component msg = Component.text("You must first configure this world.").color(NamedTextColor.RED)
                     .appendNewline()
                     .append(Component.text("> Configure manually <")
                                     .clickEvent(ClickEvent.runCommand("/zombies config"))
@@ -218,6 +231,8 @@ public final class ZombiesCommandExecutor implements TabExecutor {
         }
         world.startGame();
     }
+
+
 
     private void stop(final CommandSender sender) {
         if (!(sender instanceof final Player player)) {
@@ -367,6 +382,216 @@ public final class ZombiesCommandExecutor implements TabExecutor {
         signState.update();
         return true;
     }
+
+
+    private boolean placeButton(
+            final SignPositionFetcher fetcher,
+            final World world,
+            final BlockPosition position
+    ) {
+        final Optional<SignPosition> signPosition = fetcher.getSignPosition(world, position);
+        if (signPosition.isEmpty()) {
+            return false;
+        }
+        final Block button = signPosition.get().block();
+        button.setType(Material.STONE_BUTTON);
+
+        return true;
+    }
+
+
+    private boolean placeHologram(
+            final SignPositionFetcher fetcher,
+            final World world,
+            final BlockPosition position,
+            final Component component
+    ) {
+        final Optional<SignPosition> signPosition = fetcher.getSignPosition(world, position);
+        if (signPosition.isEmpty()) {
+            return false;
+        }
+        final TextDisplay hologram = (TextDisplay) world.spawnEntity(
+                signPosition.get().block.getLocation().toCenterLocation().add(0, 0.5, 0).setDirection(signPosition.get().direction.getDirection()),
+                EntityType.TEXT_DISPLAY
+        );
+        hologram.text(component);
+        hologram.setRotation(signPosition.get().direction.getDirection().angle(new Vector(1,0,0)), 0);
+
+        final ZombiesEntity entity = new ZombiesEntity(hologram);
+        entity.set(ZombiesEntity.IS_NOT_VANILLA, true);
+
+        return true;
+
+
+    }
+
+    private boolean placeItem(
+            final SignPositionFetcher fetcher,
+            final World world,
+            final BlockPosition position,
+            final Material material
+    ) {
+        final Optional<SignPosition> signPosition = fetcher.getSignPosition(world, position);
+        if (signPosition.isEmpty()) {
+            return false;
+        }
+
+        final ItemDisplay item = (ItemDisplay) world.spawnEntity(
+                signPosition.get().block.getLocation().toCenterLocation().add(0, -1.5, 0).setDirection(signPosition.get().direction.getDirection()),
+                EntityType.ITEM_DISPLAY
+        );
+
+        // item.setRotation((float) (signPosition.get().direction.getDirection().angle(new Vector(-1, 0, 0)) * 180.0 / 3.14), 0);
+
+
+        item.setItemStack(new ItemStack(material));
+        item.setNoPhysics(true);
+        item.setInvulnerable(true);
+
+        final ZombiesEntity entity = new ZombiesEntity(item);
+        entity.set(ZombiesEntity.IS_NOT_VANILLA, true);
+
+        return true;
+    }
+
+    private ArmorStand placeArmorStand(
+            final SignPositionFetcher fetcher,
+            final World world,
+            final BlockPosition position
+    ) {
+        final Optional<SignPosition> signPosition = fetcher.getSignPosition(world, position);
+        if (signPosition.isEmpty()) {
+            return null;
+        }
+
+        final ArmorStand stand = (ArmorStand) world.spawnEntity(
+                signPosition.get().block.getLocation().toCenterLocation().add(0, -1.5, 0).setDirection(signPosition.get().direction.getDirection()),
+                EntityType.ARMOR_STAND
+        );
+
+        stand.addEquipmentLock(EquipmentSlot.HAND, ArmorStand.LockType.ADDING_OR_CHANGING);
+        stand.addEquipmentLock(EquipmentSlot.OFF_HAND, ArmorStand.LockType.ADDING_OR_CHANGING);
+        stand.addEquipmentLock(EquipmentSlot.BODY, ArmorStand.LockType.ADDING_OR_CHANGING);
+        stand.setCanTick(false);
+        stand.setInvulnerable(true);
+        stand.setInvisible(true);
+        stand.setNoPhysics(true);
+        stand.setGravity(false);
+
+        return stand;
+    }
+
+
+    private void removeHolograms(final CommandSender sender) {
+        if (!(sender instanceof final Player player)) {
+            return;
+        }
+
+        for (final Entity entity : player.getWorld().getEntities()) {
+            final ZombiesEntity zombiesEntity = new ZombiesEntity(entity);
+            if (zombiesEntity.isNotVanilla()) {
+                entity.remove();
+            }
+        }
+
+    }
+
+    private void removeDisplays(final CommandSender sender) {
+        if (!(sender instanceof final Player player)) {
+            return;
+        }
+
+        for (final Entity entity : player.getWorld().getEntities()) {
+            if (entity.getType() == EntityType.TEXT_DISPLAY || entity.getType() == EntityType.ITEM_DISPLAY) {
+                entity.remove();
+            }
+        }
+
+    }
+
+    private void placeHolograms(final CommandSender sender, final String[] args) {
+        if (!(sender instanceof final Player player)) {
+            return;
+        }
+
+        final ZombiesWorld world = new ZombiesWorld(player.getWorld());
+        if (!world.isZombiesWorld()) {
+            return;
+        }
+        final WorldConfig config = world.getConfig();
+        final List<BlockPosition> errors = new ArrayList<>();
+
+
+        for (final ArmorShop armorShop : config.armorShops) {
+            if (armorShop.position == null || armorShop.quality == null || armorShop.part == null) {
+                continue;
+            }
+            final boolean ok = placeHologram(this::getShopSignPosition, world.getBukkit(), armorShop.position,
+                    armorShop.quality.getDisplayName().append(Component.text(" Armor")).appendNewline()
+                            .append(armorShop.part.getDisplayName()).appendNewline()
+                            .append(Component.text(armorShop.price + " Gold").color(NamedTextColor.GOLD))
+            );
+
+
+            final ArmorStand stand = placeArmorStand(this::getShopSignPosition, world.getBukkit(), armorShop.position);
+            if (stand != null) {
+                for (final EquipmentSlot equipmentSlot : armorShop.part.getEquipmentSlots()) {
+                    final ItemStack item = new ItemStack(armorShop.quality.materials.get(equipmentSlot));
+                    stand.setItem(equipmentSlot, item);
+                }
+            }
+
+            final ZombiesEntity entity = new ZombiesEntity(stand);
+            entity.set(ZombiesEntity.IS_NOT_VANILLA, true);
+            entity.set(ZombiesEntity.SHOP_ID, armorShop.id);
+
+
+            if (!ok) {
+                errors.add(armorShop.position);
+            }
+        }
+
+
+        for (final WeaponShop weaponShop : config.weaponShops) {
+            if (weaponShop.position == null || weaponShop.weaponType == null) {
+                continue;
+            }
+            final boolean ok = placeHologram(this::getShopSignPosition, world.getBukkit(), weaponShop.position,
+                    weaponShop.weaponType.getDisplayName().appendNewline()
+                            .append(Component.text(weaponShop.purchasePrice + " Gold").color(NamedTextColor.GOLD)).appendNewline()
+                            .append(Component.text("Right Click to purchase"))
+            ) && placeItem(this::getShopSignPosition, world.getBukkit(), weaponShop.position, weaponShop.weaponType.data.material);
+
+            final ArmorStand stand = placeArmorStand(this::getShopSignPosition, world.getBukkit(), weaponShop.position);
+            final ZombiesEntity entity = new ZombiesEntity(stand);
+            entity.set(ZombiesEntity.IS_NOT_VANILLA, true);
+            entity.set(ZombiesEntity.SHOP_ID, weaponShop.id);
+
+            if (!ok) {
+                errors.add(weaponShop.position);
+            }
+        }
+
+        for (final PerkMachine perkMachine : config.perkMachines) {
+            if (perkMachine.position == null || perkMachine.perk == null) {
+                continue;
+            }
+            final boolean ok = placeHologram(this::getPerkSignPosition, world.getBukkit(), perkMachine.position,
+                    perkMachine.perk.getDisplayName()
+                            .append(Component.text(" " + perkMachine.gold + " Gold").color(NamedTextColor.GOLD))
+            );
+            if (!ok) {
+                errors.add(perkMachine.position);
+            }
+        }
+
+
+        for (final BlockPosition error : errors) {
+            sender.sendMessage(Component.text("Failed to place sign at " + PositionUtil.format(error)).color(NamedTextColor.RED));
+        }
+        sender.sendMessage(Component.text("Done").color(NamedTextColor.GREEN));
+    }
+
 
     private void placeSigns(final CommandSender sender, final String[] args) {
         if (!(sender instanceof final Player player)) {

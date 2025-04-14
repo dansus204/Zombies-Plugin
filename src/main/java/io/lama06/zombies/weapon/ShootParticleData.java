@@ -8,6 +8,6 @@ public record ShootParticleData(
     double spacing
 ) {
     public ShootParticleData(final Particle particle) {
-        this(particle, 15, 1);
+        this(particle, 3, 1);
     }
 }

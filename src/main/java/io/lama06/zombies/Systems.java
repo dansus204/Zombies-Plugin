@@ -50,6 +50,7 @@ public final class Systems {
             new StartGameTimerSystem(),
             new StartNextRoundSystem(),
             new TeamMachineSystem(),
+            new InteractWithUltimateMachine(),
 
             // Lucky Chest
             new InteractWithLuckyChestSystem(),
@@ -67,6 +68,7 @@ public final class Systems {
             new SpawnPerkItemsOnZombieDeathSystem(),
             new RemovePerkItemsSystem(),
             new TickTemporaryPerksSystem(),
+            new UpdateGraphIndexSystem(),
 
             // Player Perks
             new BuyPerkSystem(),
@@ -133,6 +135,7 @@ public final class Systems {
             new DamageZombieAfterAttackSystem(),
             new InitZombieEquipmentSystem(),
             new InitZombieHealthSystem(),
+            new InitZombieEffectSystem(),
             new MakeZombiesGlowSystem(),
             new PerformFireAttackSystem(),
             new PreventFireWhenImmuneSystem(),
@@ -140,6 +143,7 @@ public final class Systems {
             new SpawnDescendantsSystem(),
             new SpawnFireTrailSystem(),
             new SpawnZombiesSystem(),
+            new CheckZombieOutOfWindowSystem(),
 
             // Break Window
             new CancelMovementDuringWindowBreakingSystem(),

@@ -13,7 +13,9 @@ public final class WeaponData {
     public ShootParticleData shootParticle;
     public MeleeData melee;
     public AttackData attack;
+    public SoundData sound;
     public boolean inLuckyChest;
+    public boolean isEnchanted;
 
     public WeaponData setDisplayName(final Component displayName) {
         this.displayName = displayName;
@@ -62,6 +64,20 @@ public final class WeaponData {
 
     public WeaponData includeInLuckyChest() {
         inLuckyChest = true;
+        return this;
+    }
+
+    public WeaponData setEnchanted() {
+        isEnchanted = true;
+        return this;
+    }
+
+    public SoundData getSound() {
+        return sound;
+    }
+
+    public WeaponData setSound(final SoundData sound) {
+        this.sound = sound;
         return this;
     }
 }
