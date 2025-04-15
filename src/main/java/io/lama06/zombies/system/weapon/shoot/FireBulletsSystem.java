@@ -22,6 +22,7 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.random.RandomGenerator;
@@ -121,18 +122,29 @@ public final class FireBulletsSystem implements Listener {
             hitPos = ray.getHitPosition();
             final boolean isCritical = (hitPos.getY() > pos + height*0.8);
             Bukkit.getPluginManager().callEvent(new PlayerAttackZombieEvent(weapon, zombie, isCritical, bullet.direction()));
-            
-            final int chain = weapon.getData().shoot.chain_reaction();
+
+            int chain = weapon.getData().shoot.chain_reaction();
             if (chain != 0) {
-                List<Entity> nearEntities = entity.getNearbyEntities(8, 2, 8).stream().filter(
-                        nearEntity -> (new Zombie(nearEntity)).isZombie() && !nearEntity.isDead()
-                ).toList().subList(0, chain);
-                for (int j = 0; j < nearEntities.size() - 1; ++j) {
-                    Bukkit.getPluginManager().callEvent(new PlayerAttackZombieEvent(
-                            weapon, new Zombie(nearEntities.get(j + 1)), false,
-                            nearEntities.get(j + 1).getLocation().toVector().subtract(nearEntities.get(j).getLocation().toVector()).normalize()
-                                                        )
-                    );
+                final List<Entity> entities = new ArrayList<>(List.of(entity));
+
+                while (chain != 0 && entities.getLast() != null) {
+                    chain--;
+                    final Entity newEntity =
+                            entities.getLast().getNearbyEntities(3, 3, 3).stream().filter(
+                                    zombiesEntity -> !entities.contains(zombiesEntity) && (new Zombie(zombiesEntity)).isZombie()
+                            ).min(Comparator.comparingDouble(
+                                    zombieEntity -> zombieEntity.getLocation().distance(entities.getLast().getLocation())
+                            )).orElse(null);
+
+                    if (newEntity != null) {
+                        Bukkit.getPluginManager().callEvent(
+                                new PlayerAttackZombieEvent(
+                                        weapon, new Zombie(newEntity), false,
+                                        newEntity.getLocation().toVector().subtract(entities.getLast().getLocation().toVector()).normalize()
+                                )
+                        );
+                        entities.add(newEntity);
+                    }
                 }
             }
         }

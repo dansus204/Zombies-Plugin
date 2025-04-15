@@ -15,6 +15,8 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.random.RandomGenerator;
 
 public final class WorldConfig implements CheckableConfig {
     public String startArea = "";
@@ -31,6 +33,20 @@ public final class WorldConfig implements CheckableConfig {
     public boolean autoStartStop;
     public boolean preventBuilding;
     public transient Graph graph;
+
+    public LuckyChest setNewLuckyChest(final LuckyChest exclude) {
+        for (final LuckyChest luckyChest : luckyChests) {
+            luckyChest.uses_left = 0;
+        }
+        final RandomGenerator rnd = ThreadLocalRandom.current();
+        int chestIndex = rnd.nextInt(luckyChests.size());
+        while (luckyChests.get(chestIndex) == exclude) {
+            chestIndex = rnd.nextInt(luckyChests.size());
+        }
+
+        luckyChests.get(chestIndex).uses_left = rnd.nextInt(10, 15);
+        return luckyChests.get(chestIndex);
+    }
 
     @Override
     public void check() throws InvalidConfigException {
@@ -134,7 +150,7 @@ public final class WorldConfig implements CheckableConfig {
                                 Component.text("Lucky Chests"),
                                 luckyChests,
                                 Material.CHEST,
-                                luckyChest -> Component.text("Lucky Chest at " + PositionUtil.format(luckyChest.position)),
+                                luckyChest -> Component.text("Lucky Chest at " + PositionUtil.format(luckyChest.position) + " in " + luckyChest.area),
                                 LuckyChest::new,
                                 luckChest -> luckChest.openMenu(player, reopen),
                                 reopen

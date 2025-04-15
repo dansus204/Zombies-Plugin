@@ -22,9 +22,12 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.random.RandomGenerator;
 
 public final class PrepareWorldAtGameStartSystem implements Listener {
 
@@ -94,6 +97,13 @@ public final class PrepareWorldAtGameStartSystem implements Listener {
             player.giveWeapon(1, WeaponType.PISTOL);
         }
 
+        final LuckyChest chest = config.setNewLuckyChest(null);
+        chest.textDisplays = chest.placeHologram(world.getBukkit(), List.of(
+                Component.text("Lucky Chest").color(NamedTextColor.DARK_PURPLE),
+                Component.text(chest.gold + " Gold").color(NamedTextColor.GOLD)
+        ));
+
+
         for (final ArmorShop armorShop : config.armorShops) {
             if (armorShop.position == null || armorShop.quality == null || armorShop.part == null) {
                 continue;
@@ -156,6 +166,23 @@ public final class PrepareWorldAtGameStartSystem implements Listener {
                               Component.text("Right Click to upgrade your weapon")
                       )
         );
+
+        placeHologram(this::getPerkSignPosition, world.getBukkit(), world.getConfig().teamMachine, List.of(
+                              Component.text("Team Machine "),
+                              Component.text("Right Click")
+                      )
+        );
+
+        placeHologram(this::getPerkSignPosition, world.getBukkit(), world.getConfig().powerSwitch.position, List.of(
+                              Component.text("Power Switch"),
+                              Component.text(world.getConfig().powerSwitch.gold + " Gold").color(NamedTextColor.GOLD)
+                      )
+        );
+
+
+
+
+
         world.sendMessage(Component.text("Done").color(NamedTextColor.GREEN));
 
 
@@ -224,7 +251,7 @@ public final class PrepareWorldAtGameStartSystem implements Listener {
     }
 
 
-    private void placeHologram(
+    private List<TextDisplay> placeHologram(
             final SignPositionFetcher fetcher,
             final World world,
             final BlockPosition position,
@@ -232,24 +259,27 @@ public final class PrepareWorldAtGameStartSystem implements Listener {
     ) {
         final Optional<SignPosition> signPosition = fetcher.getSignPosition(world, position);
         if (signPosition.isEmpty()) {
-            return;
+            return null;
         }
 
+        final List<TextDisplay> displays = new ArrayList<>();
         int i = 0;
-        for (final Component component : components.reversed()) {
+        for (final Component component : components) {
             final TextDisplay hologram = (TextDisplay) world.spawnEntity(
-                    signPosition.get().block.getLocation().toCenterLocation().add(0, 0.5 + 0.2 * i++, 0).setDirection(signPosition.get().direction.getDirection()),
+                    signPosition.get().block.getLocation().toCenterLocation().add(0, - 0.25 * i++ + 0.25 * components.size(), 0).setDirection(signPosition.get().direction.getDirection()),
                     EntityType.TEXT_DISPLAY
             );
             hologram.text(component);
             hologram.setRotation(signPosition.get().direction.getDirection().angle(new Vector(1,0,0)), 0);
+            hologram.setBillboard(Display.Billboard.CENTER);
+
 
             final ZombiesEntity entity = new ZombiesEntity(hologram);
             entity.set(ZombiesEntity.IS_NOT_VANILLA, true);
+            displays.add(hologram);
         }
 
-
-
+        return displays;
     }
 
     private void placeItem(

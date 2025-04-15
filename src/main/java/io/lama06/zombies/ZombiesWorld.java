@@ -100,8 +100,6 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
         zombie.set(Zombie.IN_WINDOW, false);
 
 
-
-
         //zombie.set(Zombie.CLOSEST_POINT, getConfig().graph.findClosestPointIndex(location));
         Bukkit.getPluginManager().callEvent(new ZombieSpawnEvent(zombie, type.data));
 

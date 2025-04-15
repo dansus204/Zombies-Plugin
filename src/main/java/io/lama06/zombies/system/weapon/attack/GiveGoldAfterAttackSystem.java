@@ -47,7 +47,7 @@ public final class GiveGoldAfterAttackSystem implements Listener {
         player.sendMessage(Component.text((
                 "+%s Gold" + comment
                                           ).formatted(goldAdd)).color(NamedTextColor.GOLD));
-        player.playSound(Sound.sound(Key.key("minecraft:block.note_block.bell"), Sound.Source.BLOCK, 1, event.isCritical() ? 2F : 1.4F));
+        player.playSound(Sound.sound(Key.key("minecraft:entity.experience_orb.pickup"), Sound.Source.BLOCK, 1, event.isCritical() ? 1.5F : 2F));
 
         Bukkit.getPluginManager().callEvent(new PlayerGoldChangeEvent(player, goldBefore, goldAfter));
     }
