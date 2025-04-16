@@ -62,6 +62,7 @@ public final class OpenDoorSystem implements Listener {
             world.set(ZombiesWorld.OPEN_DOORS, newDoorIndizes);
 
             world.updateGraph(newArea, door.links);
+            world.updateDoorHolograms();
         }
     }
 }

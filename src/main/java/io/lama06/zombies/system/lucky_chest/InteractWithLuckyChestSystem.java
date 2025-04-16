@@ -68,28 +68,23 @@ public final class InteractWithLuckyChestSystem implements Listener {
             return;
         }
 
-        player.sendMessage(Component.text("1"));
         if (chest.state == 1) {
             return;
         }
 
-        player.sendMessage(Component.text("2"));
         if (chest.state == 0) {
             openLuckyChest(player, world, chest);
         }
 
-        player.sendMessage(Component.text("3"));
         if (chest.state == 2) {
             claimItem(player, chest);
         }
-
-        player.sendMessage(Component.text("4"));
 
     }
 
     private void decrementChestUses(final LuckyChest chest, final ZombiesWorld world) {
         if (--chest.uses_left == 0) {
-            world.getConfig().setNewLuckyChest(chest);
+            world.setNewLuckyChest(chest);
             world.sendMessage(Component.text("Lucky Chest has moved to a new location!"));
         } else {
             for (final TextDisplay display : chest.textDisplays) {

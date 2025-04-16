@@ -3,11 +3,14 @@ package io.lama06.zombies;
 import io.lama06.zombies.menu.*;
 import io.lama06.zombies.util.BlockArea;
 import io.lama06.zombies.util.GraphDoorLink;
+import io.lama06.zombies.util.PositionUtil;
+import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +18,15 @@ import java.util.List;
 public final class Door implements CheckableConfig {
     public String area1 = "";
     public String area2 = "";
+    public BlockPosition pos1;
+    public BlockPosition pos2;
     public int gold = 750;
     public BlockArea position;
     public BlockArea templateOpen;
     public BlockArea templateClosed;
     public List<GraphDoorLink> links = new ArrayList<>();
+    public transient List<TextDisplay> hologram1 = new ArrayList<>();
+    public transient List<TextDisplay> hologram2 = new ArrayList<>();
 
     public void setOpen(final ZombiesWorld world, final boolean open) {
         if (open && templateOpen == null) {
@@ -27,12 +34,19 @@ public final class Door implements CheckableConfig {
             return;
         }
         (open ? templateOpen : templateClosed).clone(world.getBukkit(), position);
+
+
     }
+
+
 
     @Override
     public void check() throws InvalidConfigException {
         InvalidConfigException.mustBeSet(area1, "first area");
         InvalidConfigException.mustBeSet(area2, "second area");
+        InvalidConfigException.mustBeSet(pos1, "pos1");
+        InvalidConfigException.mustBeSet(pos2, "pos2");
+
         InvalidConfigException.mustBeSet(position, "position");
         InvalidConfigException.mustBeSet(templateClosed, "template closed");
         InvalidConfigException.checkList(links, true, "links");
@@ -76,6 +90,32 @@ public final class Door implements CheckableConfig {
                         },
                         () -> openMenu(player, callback)
                 )),
+                new SelectionEntry(
+                        Component.text("Hologram position 1: " + PositionUtil.format(pos1)),
+                        Material.END_ROD,
+                        () -> BlockPositionSelection.open(
+                                player,
+                                Component.text("Position"),
+                                reopen,
+                                pos -> {
+                                    pos1 = pos;
+                                    reopen.run();
+                                }
+                        )
+                ),
+                new SelectionEntry(
+                        Component.text("Hologram position 1: " + PositionUtil.format(pos2)),
+                        Material.END_ROD,
+                        () -> BlockPositionSelection.open(
+                                player,
+                                Component.text("Position"),
+                                reopen,
+                                pos -> {
+                                    pos2 = pos;
+                                    reopen.run();
+                                }
+                        )
+                ),
                 new SelectionEntry(Component.text("Gold: " + gold), Material.GOLD_NUGGET, () -> InputMenu.open(
                         player,
                         Component.text("Gold").color(NamedTextColor.GOLD),

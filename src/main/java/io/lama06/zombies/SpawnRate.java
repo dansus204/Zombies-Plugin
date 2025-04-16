@@ -9,20 +9,20 @@ public record SpawnRate(List<SpawnRateWave> waves) {
     public static final List<SpawnRate> SPAWN_RATES = List.of(
             // 1:
             new SpawnRate(List.of(
-                    new SpawnRateWave(3 * 20, Map.of(
+                    new SpawnRateWave(10 * 20, Map.of(
                             ZombieType.ZOMBIE1, 4
                     )),
-                    new SpawnRateWave(15 * 20, Map.of(
+                    new SpawnRateWave(10 * 20, Map.of(
                             ZombieType.ZOMBIE1, 4
                     ))
 
             )),
             // 2:
             new SpawnRate(List.of(
-                    new SpawnRateWave(3 * 20, Map.of(
+                    new SpawnRateWave(10 * 20, Map.of(
                             ZombieType.ZOMBIE2, 5
                     )),
-                    new SpawnRateWave(15 * 20, Map.of(
+                    new SpawnRateWave(10 * 20, Map.of(
                             ZombieType.ZOMBIE2, 5
                     ))
 

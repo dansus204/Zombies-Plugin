@@ -6,6 +6,16 @@
         {
           "area1": "Alley",
           "area2": "Hotel",
+          "pos1": {
+            "x": 12,
+            "y": 68,
+            "z": 21
+          },
+          "pos2": {
+            "x": 10,
+            "y": 68,
+            "z": 21
+          },
           "gold": 750,
           "position": {
             "position1": {
@@ -58,6 +68,16 @@
         {
           "area1": "Alley",
           "area2": "Office",
+          "pos1": {
+            "x": 25,
+            "y": 68,
+            "z": 43
+          },
+          "pos2": {
+            "x": 27,
+            "y": 68,
+            "z": 43
+          },
           "gold": 500,
           "position": {
             "position1": {
@@ -89,6 +109,16 @@
         {
           "area1": "Hotel",
           "area2": "Garden",
+          "pos1": {
+            "x": 17,
+            "y": 68,
+            "z": -7
+          },
+          "pos2": {
+            "x": 17,
+            "y": 68,
+            "z": -9
+          },
           "gold": 750,
           "position": {
             "position1": {
@@ -120,6 +150,16 @@
         {
           "area1": "Hotel",
           "area2": "Apartment",
+          "pos1": {
+            "x": 7,
+            "y": 75,
+            "z": 2
+          },
+          "pos2": {
+            "x": 7,
+            "y": 75,
+            "z": 4
+          },
           "gold": 750,
           "position": {
             "position1": {
@@ -157,6 +197,16 @@
         {
           "area1": "Apartment",
           "area2": "Power Station",
+          "pos1": {
+            "x": -8,
+            "y": 76,
+            "z": 29
+          },
+          "pos2": {
+            "x": -8,
+            "y": 76,
+            "z": 31
+          },
           "gold": 1000,
           "position": {
             "position1": {
@@ -188,6 +238,16 @@
         {
           "area1": "Power Station",
           "area2": "Gallery",
+          "pos1": {
+            "x": 13,
+            "y": 75,
+            "z": 54
+          },
+          "pos2": {
+            "x": 15,
+            "y": 75,
+            "z": 54
+          },
           "gold": 750,
           "position": {
             "position1": {
@@ -219,6 +279,16 @@
         {
           "area1": "Office",
           "area2": "Gallery",
+          "pos1": {
+            "x": 36,
+            "y": 75,
+            "z": 56
+          },
+          "pos2": {
+            "x": 36,
+            "y": 75,
+            "z": 58
+          },
           "gold": 750,
           "position": {
             "position1": {
@@ -250,7 +320,17 @@
         {
           "area1": "Power Station",
           "area2": "Roof Top",
-          "gold": 750,
+          "pos1": {
+            "x": -13,
+            "y": 82,
+            "z": 54
+          },
+          "pos2": {
+            "x": -15,
+            "y": 81,
+            "z": 54
+          },
+          "gold": 1000,
           "position": {
             "position1": {
               "x": -14,

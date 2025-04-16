@@ -4,6 +4,7 @@ import io.lama06.zombies.menu.*;
 import io.lama06.zombies.perk.PerkMachine;
 import io.lama06.zombies.util.Graph;
 import io.lama06.zombies.util.GraphPoint;
+import io.lama06.zombies.util.HologramUtil;
 import io.lama06.zombies.util.PositionUtil;
 import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.Component;
@@ -11,6 +12,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,19 +36,7 @@ public final class WorldConfig implements CheckableConfig {
     public boolean preventBuilding;
     public transient Graph graph;
 
-    public LuckyChest setNewLuckyChest(final LuckyChest exclude) {
-        for (final LuckyChest luckyChest : luckyChests) {
-            luckyChest.uses_left = 0;
-        }
-        final RandomGenerator rnd = ThreadLocalRandom.current();
-        int chestIndex = rnd.nextInt(luckyChests.size());
-        while (luckyChests.get(chestIndex) == exclude) {
-            chestIndex = rnd.nextInt(luckyChests.size());
-        }
 
-        luckyChests.get(chestIndex).uses_left = rnd.nextInt(10, 15);
-        return luckyChests.get(chestIndex);
-    }
 
     @Override
     public void check() throws InvalidConfigException {

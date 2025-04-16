@@ -6,6 +6,7 @@ import io.lama06.zombies.event.GameStartEvent;
 import io.lama06.zombies.event.zombie.ZombieSpawnEvent;
 import io.lama06.zombies.perk.GlobalPerk;
 import io.lama06.zombies.util.GraphDoorLink;
+import io.lama06.zombies.util.HologramUtil;
 import io.lama06.zombies.zombie.Zombie;
 import io.lama06.zombies.zombie.ZombieType;
 import net.kyori.adventure.audience.Audience;
@@ -20,10 +21,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.random.RandomGenerator;
 
@@ -132,6 +130,72 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
         if (hpParts == 0) {
             stand.remove();
         }
+    }
+
+    public void updateDoorHolograms() {
+        for (final Door door : getConfig().doors) {
+            world.sendMessage(net.kyori.adventure.text.Component.text(door.area1 + " " + door.area2));
+
+            for (final TextDisplay display : door.hologram1) {
+                display.remove();
+            }
+            for (final TextDisplay display : door.hologram2) {
+                display.remove();
+            }
+            world.sendMessage(net.kyori.adventure.text.Component.text("1"));
+
+            if (get(ZombiesWorld.OPEN_DOORS).contains(getConfig().doors.indexOf(door))) {
+                door.hologram1 = new ArrayList<>();
+                door.hologram2 = new ArrayList<>();
+                continue;
+            }
+            if (get(ZombiesWorld.REACHABLE_AREAS).contains(door.area1)) {
+                door.hologram1 = HologramUtil.placeHologram(
+                        getBukkit(), door.pos1.toCenter(), List.of(
+                                net.kyori.adventure.text.Component.text("Open " + door.area2),
+                                net.kyori.adventure.text.Component.text(door.gold + " Gold").color(NamedTextColor.GOLD)
+                        ));
+                world.sendMessage(net.kyori.adventure.text.Component.text("2"));
+
+            }
+            if (get(ZombiesWorld.REACHABLE_AREAS).contains(door.area2)) {
+                door.hologram2 = HologramUtil.placeHologram(
+                        getBukkit(), door.pos2.toCenter(), List.of(
+                                net.kyori.adventure.text.Component.text("Open " + door.area1),
+                                net.kyori.adventure.text.Component.text(door.gold + " Gold").color(NamedTextColor.GOLD)
+                        ));
+                world.sendMessage(net.kyori.adventure.text.Component.text("3"));
+
+
+            }
+
+            world.sendMessage(net.kyori.adventure.text.Component.text("4"));
+
+        }
+    }
+
+    public void setNewLuckyChest(final LuckyChest exclude) {
+        for (final LuckyChest luckyChest : getConfig().luckyChests) {
+            luckyChest.uses_left = 0;
+        }
+        if (exclude != null) {
+            for (final TextDisplay display : exclude.textDisplays) {
+                display.remove();
+            }
+            exclude.textDisplays = new ArrayList<>();
+        }
+        final RandomGenerator rnd = ThreadLocalRandom.current();
+        int chestIndex = rnd.nextInt(getConfig().luckyChests.size());
+        while (getConfig().luckyChests.get(chestIndex) == exclude) {
+            chestIndex = rnd.nextInt(getConfig().luckyChests.size());
+        }
+        final LuckyChest chest = getConfig().luckyChests.get(chestIndex);
+
+        chest.uses_left = rnd.nextInt(10, 15);
+        chest.textDisplays = HologramUtil.placeHologram(getBukkit(), chest.getItemPosition(getBukkit()), List.of(
+                net.kyori.adventure.text.Component.text("Lucky Chest").color(NamedTextColor.DARK_PURPLE),
+                net.kyori.adventure.text.Component.text(chest.gold + " Gold").color(NamedTextColor.GOLD)
+        ));
     }
 
     public List<ZombiesPlayer> getAlivePlayers() {

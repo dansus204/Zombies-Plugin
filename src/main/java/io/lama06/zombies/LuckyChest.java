@@ -33,7 +33,7 @@ public final class LuckyChest implements CheckableConfig {
 
     public transient TextDisplay timer;
     public transient ItemDisplay display;
-    public transient List<TextDisplay> textDisplays = null;
+    public transient List<TextDisplay> textDisplays = new ArrayList<>();
 
     @Override
     public void check() throws InvalidConfigException {
@@ -79,30 +79,6 @@ public final class LuckyChest implements CheckableConfig {
             return position.toCenter().offset(0, 1, 0);
         }
         return PositionUtil.getMidpoint(position.toCenter(), secondChestBlock.getLocation().toCenter()).offset(0, 1, 0);
-    }
-
-    public List<TextDisplay> placeHologram(
-            final World world,
-            final List<Component> components
-    ) {
-
-        final List<TextDisplay> displays = new ArrayList<>();
-        int i = 0;
-        for (final Component component : components) {
-            final TextDisplay hologram = (TextDisplay) world.spawnEntity(
-                    getItemPosition(world).toLocation(world).add(0, 0.5 - 0.25 * i++ + 0.25 * components.size(), 0),
-                    EntityType.TEXT_DISPLAY
-            );
-            hologram.text(component);
-            hologram.setBillboard(Display.Billboard.CENTER);
-
-
-            final ZombiesEntity entity = new ZombiesEntity(hologram);
-            entity.set(ZombiesEntity.IS_NOT_VANILLA, true);
-            displays.add(hologram);
-        }
-
-        return displays;
     }
 
 
