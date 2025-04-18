@@ -18,8 +18,7 @@ import org.bukkit.event.Listener;
 public final class GiveGoldAfterAttackSystem implements Listener {
     @EventHandler
     private void onPlayerAttacksZombie(final PlayerAttackZombieEvent event) {
-        final Weapon weapon = event.getWeapon();
-        final AttackData attackData = weapon.getData().attack;
+        final AttackData attackData = event.getWeaponType().data.attack;
         if (attackData == null) {
             return;
         }
@@ -38,6 +37,10 @@ public final class GiveGoldAfterAttackSystem implements Listener {
         }
         if (world.isPerkEnabled(GlobalPerk.DOUBLE_GOLD)) {
             goldAdd *= 2;
+        }
+
+        if (goldAdd == 0) {
+            return;
         }
 
 

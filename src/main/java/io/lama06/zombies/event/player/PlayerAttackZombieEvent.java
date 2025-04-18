@@ -1,7 +1,9 @@
 package io.lama06.zombies.event.player;
 
+import io.lama06.zombies.ZombiesPlayer;
 import io.lama06.zombies.util.HandlerListGetter;
 import io.lama06.zombies.weapon.Weapon;
+import io.lama06.zombies.weapon.WeaponType;
 import io.lama06.zombies.zombie.Zombie;
 import org.bukkit.event.HandlerList;
 import org.bukkit.util.Vector;
@@ -14,7 +16,7 @@ public final class PlayerAttackZombieEvent extends PlayerEvent {
         return HANDLERS;
     }
 
-    private final Weapon weapon;
+    private final WeaponType weaponType;
     private final Zombie zombie;
     private boolean fire;
     private boolean kill;
@@ -24,13 +26,13 @@ public final class PlayerAttackZombieEvent extends PlayerEvent {
     private boolean critical;
     private Vector direction;
 
-    public PlayerAttackZombieEvent(final Weapon weapon, final Zombie zombie, final boolean critical,
+    public PlayerAttackZombieEvent(final WeaponType weaponType, final ZombiesPlayer player, final Zombie zombie, final boolean critical,
                                    final Vector direction
     ) {
-        super(weapon.getPlayer());
+        super(player);
         this.zombie = zombie;
-        this.weapon = weapon;
         this.critical = critical;
+        this.weaponType = weaponType;
         this.direction = direction;
     }
 
@@ -38,8 +40,8 @@ public final class PlayerAttackZombieEvent extends PlayerEvent {
         return zombie;
     }
 
-    public Weapon getWeapon() {
-        return weapon;
+    public WeaponType getWeaponType() {
+        return weaponType;
     }
 
     public void setBaseDamage(final double baseDamage) {

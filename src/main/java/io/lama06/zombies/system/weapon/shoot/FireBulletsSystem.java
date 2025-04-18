@@ -9,15 +9,16 @@ import io.lama06.zombies.weapon.ShootData;
 import io.lama06.zombies.weapon.Weapon;
 import io.lama06.zombies.zombie.Zombie;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
@@ -54,38 +55,57 @@ public final class FireBulletsSystem implements Listener {
         if (shootData == null) {
             return;
         }
-        final RandomGenerator rnd = ThreadLocalRandom.current();
+
         final List<WeaponShootEvent.Bullet> bulletsList = new ArrayList<>();
-        for (int i = 0; i < shootData.bullets(); i++) {
-            final float yaw = (float) (player.getBukkit().getYaw() +
-                    (1 - shootData.precision()) * rnd.nextDouble() * 90 * (rnd.nextBoolean() ? 1 : -1));
-            final float pitch = (float) (player.getBukkit().getPitch() +
-                    (1 - shootData.precision()) * rnd.nextDouble() * 90 * (rnd.nextBoolean() ? 1 : -1));
-            final Vector bulletDirection = VectorUtil.fromJawAndPitch(yaw, pitch);
-            bulletsList.add(new WeaponShootEvent.Bullet(bulletDirection));
-        }
-        if (!new WeaponShootEvent(weapon, bulletsList).callEvent()) {
-            return;
-        }
-        if (weapon.getData().sound != null && shootData.delay() == 0) {
-            player.playSound(weapon.getData().sound.sound());
-        }
 
-        for (int i = 0; i < bulletsList.size(); ++i) {
+        if (shootData.explosion() == 1) {
+            if (!new WeaponShootEvent(weapon, bulletsList).callEvent()) {
+                return;
+            }
 
-            final int finalI = i;
-            Bukkit.getScheduler().scheduleSyncDelayedTask(ZombiesPlugin.INSTANCE,
-                                                          ()-> {
-                                                              detectShotAtZombie(player, weapon, bulletsList.get(finalI));
-                                                              if (weapon.getData().sound != null && shootData.delay() != 0) {
-                                                                  player.playSound(weapon.getData().sound.sound());
-                                                              }
-                                                          }
-                                                                  ,
-                                                          shootData.delay() * i
-            );
+            final Fireball fireball = (Fireball) player.getWorld().getBukkit().spawnEntity(player.getBukkit().getEyeLocation().setDirection(
+                    VectorUtil.fromJawAndPitch(player.getBukkit().getYaw(), player.getBukkit().getPitch())
+            ), EntityType.FIREBALL);
+            fireball.setVelocity(fireball.getVelocity().multiply(1.5));
+            fireball.setShooter(player.getBukkit());
+            final ZombiesFireball zombiesFireball = new ZombiesFireball(fireball);
+            zombiesFireball.set(ZombiesFireball.FIREBALL_WEAPON, weapon.getType());
+
+        } else {
+
+            final RandomGenerator rnd = ThreadLocalRandom.current();
+            for (int i = 0; i < shootData.bullets(); i++) {
+                final float yaw = (float) (player.getBukkit().getYaw() +
+                        (1 - shootData.precision()) * rnd.nextDouble() * 90 * (rnd.nextBoolean() ? 1 : -1));
+                final float pitch = (float) (player.getBukkit().getPitch() +
+                        (1 - shootData.precision()) * rnd.nextDouble() * 90 * (rnd.nextBoolean() ? 1 : -1));
+                final Vector bulletDirection = VectorUtil.fromJawAndPitch(yaw, pitch);
+                bulletsList.add(new WeaponShootEvent.Bullet(bulletDirection));
+            }
+
+            if (!new WeaponShootEvent(weapon, bulletsList).callEvent()) {
+                return;
+            }
+            if (weapon.getData().sound != null && shootData.delay() == 0) {
+                player.playSound(weapon.getData().sound.sound());
+            }
+
+            for (int i = 0; i < bulletsList.size(); ++i) {
+
+                final int finalI = i;
+                Bukkit.getScheduler().scheduleSyncDelayedTask(
+                        ZombiesPlugin.INSTANCE,
+                        () -> {
+                            detectShotAtZombie(player, weapon, bulletsList.get(finalI));
+                            if (weapon.getData().sound != null && shootData.delay() != 0) {
+                                player.playSound(weapon.getData().sound.sound());
+                            }
+                        }
+                        ,
+                        shootData.delay() * i
+                );
+            }
         }
-
 
     }
 
@@ -121,7 +141,7 @@ public final class FireBulletsSystem implements Listener {
             final double pos = entity.getY();
             hitPos = ray.getHitPosition();
             final boolean isCritical = (hitPos.getY() > pos + height*0.8);
-            Bukkit.getPluginManager().callEvent(new PlayerAttackZombieEvent(weapon, zombie, isCritical, bullet.direction()));
+            Bukkit.getPluginManager().callEvent(new PlayerAttackZombieEvent(weapon.getType(), player, zombie, isCritical, bullet.direction()));
 
             int chain = weapon.getData().shoot.chain_reaction();
             if (chain != 0) {
@@ -139,7 +159,7 @@ public final class FireBulletsSystem implements Listener {
                     if (newEntity != null) {
                         Bukkit.getPluginManager().callEvent(
                                 new PlayerAttackZombieEvent(
-                                        weapon, new Zombie(newEntity), false,
+                                        weapon.getType(), player, new Zombie(newEntity), false,
                                         newEntity.getLocation().toVector().subtract(entities.getLast().getLocation().toVector()).normalize()
                                 )
                         );

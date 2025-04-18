@@ -19,8 +19,13 @@ public final class DamageZombieAfterAttackSystem implements Listener {
         if (event.isFire()) {
             entity.setFireTicks(5 * 20);
         }
+
         if (!(entity instanceof final LivingEntity living)) {
             return;
+        }
+        if (event.getWeaponType().data.isPoisoned) {
+            zombie.set(Zombie.POISON_TICKS, 200);
+            living.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 10 * 20, 2));
         }
         if (event.isKill()) {
             living.setKiller(event.getPlayer().getBukkit());

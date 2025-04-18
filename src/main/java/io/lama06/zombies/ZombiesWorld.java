@@ -96,9 +96,9 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
         zombie.set(Zombie.IS_ZOMBIE, true);
         zombie.set(Zombie.TYPE, type);
         zombie.set(Zombie.IN_WINDOW, false);
+        zombie.set(Zombie.POISON_TICKS, 0);
 
-
-        //zombie.set(Zombie.CLOSEST_POINT, getConfig().graph.findClosestPointIndex(location));
+        zombie.set(Zombie.CLOSEST_POINT, getConfig().graph.findClosestPointIndex(location));
         Bukkit.getPluginManager().callEvent(new ZombieSpawnEvent(zombie, type.data));
 
         if (type.data.isBoss) {
@@ -134,7 +134,6 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
 
     public void updateDoorHolograms() {
         for (final Door door : getConfig().doors) {
-            world.sendMessage(net.kyori.adventure.text.Component.text(door.area1 + " " + door.area2));
 
             for (final TextDisplay display : door.hologram1) {
                 display.remove();
@@ -142,7 +141,6 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
             for (final TextDisplay display : door.hologram2) {
                 display.remove();
             }
-            world.sendMessage(net.kyori.adventure.text.Component.text("1"));
 
             if (get(ZombiesWorld.OPEN_DOORS).contains(getConfig().doors.indexOf(door))) {
                 door.hologram1 = new ArrayList<>();
@@ -155,7 +153,6 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
                                 net.kyori.adventure.text.Component.text("Open " + door.area2),
                                 net.kyori.adventure.text.Component.text(door.gold + " Gold").color(NamedTextColor.GOLD)
                         ));
-                world.sendMessage(net.kyori.adventure.text.Component.text("2"));
 
             }
             if (get(ZombiesWorld.REACHABLE_AREAS).contains(door.area2)) {
@@ -164,13 +161,8 @@ public final class ZombiesWorld extends Storage implements ForwardingAudience {
                                 net.kyori.adventure.text.Component.text("Open " + door.area1),
                                 net.kyori.adventure.text.Component.text(door.gold + " Gold").color(NamedTextColor.GOLD)
                         ));
-                world.sendMessage(net.kyori.adventure.text.Component.text("3"));
-
 
             }
-
-            world.sendMessage(net.kyori.adventure.text.Component.text("4"));
-
         }
     }
 

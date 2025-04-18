@@ -19,6 +19,7 @@ import io.lama06.zombies.system.weapon.melee.AttackMeleeSystem;
 import io.lama06.zombies.system.weapon.melee.RenderMeleeLoreSystem;
 import io.lama06.zombies.system.weapon.reload.*;
 import io.lama06.zombies.system.weapon.shoot.FireBulletsSystem;
+import io.lama06.zombies.system.weapon.shoot.FireballExplosionSystem;
 import io.lama06.zombies.system.weapon.shoot.RenderShootLoreSystem;
 import io.lama06.zombies.system.weapon.shoot.SpawnParticlesAfterShotSystem;
 import io.lama06.zombies.system.zombie.*;
@@ -140,6 +141,8 @@ public final class Systems {
             new SpawnFireTrailSystem(),
             new SpawnZombiesSystem(),
             new CheckZombieOutOfWindowSystem(),
+            new DamageZombiesByPoisonSystem(),
+            new FireballExplosionSystem(),
 
             // Break Window
             new CancelMovementDuringWindowBreakingSystem(),

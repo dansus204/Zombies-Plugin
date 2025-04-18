@@ -18,6 +18,7 @@ public final class Zombie extends Storage {
     public static final AttributeId<ZombieType> TYPE = new AttributeId<>("type", new EnumPersistentDataType<>(ZombieType.class));
     public static final AttributeId<Integer> CLOSEST_POINT = new AttributeId<>("closest_point", PersistentDataType.INTEGER);
     public static final AttributeId<Double> SPAWN_POS_Y = new AttributeId<>("spawn_pos_y", PersistentDataType.DOUBLE);
+    public static final AttributeId<Integer> POISON_TICKS = new AttributeId<>("poison_ticks", PersistentDataType.INTEGER);
 
 
     public static final ComponentId BREAK_WINDOW = new ComponentId("break_window");

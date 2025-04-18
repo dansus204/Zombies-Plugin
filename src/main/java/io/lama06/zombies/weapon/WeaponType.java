@@ -314,6 +314,83 @@ public enum WeaponType implements MenuDisplayableEnum {
 
     ),
 
+    BLOW_DART(
+            new WeaponData()
+                    .setDisplayName(Component.text("Blow Dart"))
+                    .setMaterial(Material.IRON_SHOVEL)
+                    .setShoot(new ShootData(1, 0, 1, 1, 0, 0))
+                    .setAttack(new AttackData(10, false, false, false, 20, 30))
+                    .setAmmo(new AmmoData(100, 10))
+                    .setDelay(new DelayData(10))
+                    .setReload(new ReloadData(60))
+                    .includeInLuckyChest()
+                    .setSound(new SoundData(Sound.sound(Key.key("entity.firework_rocket.shoot"), Sound.Source.BLOCK, 20,1F)))
+                    .setPoisoned()
+    ),
+    BLOW_DART_ULTIMATE(
+            new WeaponData()
+                    .setDisplayName(Component.text("Blow Dart Ultimate"))
+                    .setMaterial(Material.IRON_SHOVEL)
+                    .setEnchanted()
+                    .setShoot(new ShootData(1, 0, 1, 1, 0, 0))
+                    .setAttack(new AttackData(10, false, false, false, 20, 30))
+                    .setAmmo(new AmmoData(150, 10))
+                    .setDelay(new DelayData(6))
+                    .setReload(new ReloadData(36))
+                    .setSound(new SoundData(Sound.sound(Key.key("entity.firework_rocket.shoot"), Sound.Source.BLOCK, 20,1F)))
+                    .setPoisoned()
+    ),
+    ZOMBIE_SOAKER(
+            new WeaponData()
+                    .setDisplayName(Component.text("Zombie Soaker"))
+                    .setMaterial(Material.DIAMOND_HOE)
+                    .setShoot(new ShootData(1, 0, 1, 1, 0, 0))
+                    .setAttack(new AttackData(5, false, false, false, 5, 10))
+                    .setAmmo(new AmmoData(256, 32))
+                    .setDelay(new DelayData(5))
+                    .setReload(new ReloadData(30))
+                    .includeInLuckyChest()
+                    .setSound(new SoundData(Sound.sound(Key.key("entity.firework_rocket.shoot"), Sound.Source.BLOCK, 20,1F)))
+    ),
+    ZOMBIE_SOAKER_ULTIMATE(
+            new WeaponData()
+                    .setDisplayName(Component.text("Zombie Soaker Ultimate"))
+                    .setMaterial(Material.DIAMOND_HOE)
+                    .setEnchanted()
+                    .setShoot(new ShootData(1, 0, 1, 1, 0, 0))
+                    .setAttack(new AttackData(8, false, false, false, 5, 10))
+                    .setAmmo(new AmmoData(320, 32))
+                    .setDelay(new DelayData(5))
+                    .setReload(new ReloadData(20))
+                    .includeInLuckyChest()
+                    .setSound(new SoundData(Sound.sound(Key.key("entity.firework_rocket.shoot"), Sound.Source.BLOCK, 20,1F)))
+    ),
+    ROCKET_LAUNCHER(
+            new WeaponData()
+                    .setDisplayName(Component.text("Rocket Launcher"))
+                    .setMaterial(Material.STONE_SHOVEL)
+                    .setShoot(new ShootData(1, 0, 1, 1, 0, 1))
+                    .setAttack(new AttackData(6.5, false, false, false, 0, 30))
+                    .setAmmo(new AmmoData(20, 4))
+                    .setDelay(new DelayData(40))
+                    .setReload(new ReloadData(60))
+                    .setSound(new SoundData(Sound.sound(Key.key("entity.firework_rocket."), Sound.Source.BLOCK, 20,1F)))
+    ),
+    ROCKET_LAUNCHER_ULTIMATE(
+            new WeaponData()
+                    .setDisplayName(Component.text("Rocket Launcher Ultimate"))
+                    .setMaterial(Material.STONE_SHOVEL)
+                    .setEnchanted()
+                    .setShoot(new ShootData(1, 0, 1, 1, 0, 1))
+                    .setAttack(new AttackData(9, false, false, false, 0, 30))
+                    .setAmmo(new AmmoData(32, 4))
+                    .setDelay(new DelayData(30))
+                    .setReload(new ReloadData(40))
+                    .setSound(new SoundData(Sound.sound(Key.key("entity.firework_rocket."), Sound.Source.BLOCK, 20,1F)))
+    ),
+
+
+
     ;
 
     public final WeaponData data;

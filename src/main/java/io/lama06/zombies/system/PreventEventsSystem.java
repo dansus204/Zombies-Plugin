@@ -3,6 +3,8 @@ package io.lama06.zombies.system;
 import io.lama06.zombies.ZombiesPlayer;
 import io.lama06.zombies.ZombiesPlugin;
 import io.lama06.zombies.ZombiesWorld;
+import io.lama06.zombies.system.weapon.shoot.ZombiesFireball;
+import io.lama06.zombies.system.zombie.fireball_attack.DamagePlayerWhenFireballExplodesSystem;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -11,6 +13,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,10 +21,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.entity.SlimeSplitEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -177,6 +177,18 @@ public final class PreventEventsSystem implements Listener {
             return;
         }
         event.setCancelled(true);
+    }
+
+    @EventHandler
+    private void onFireballExplosion(final EntityDamageByEntityEvent event) {
+        final ZombiesWorld world = new ZombiesWorld(event.getEntity().getWorld());
+        if (!world.isZombiesWorld()) {
+            return;
+        }
+        final ZombiesFireball fireball = new ZombiesFireball(event.getDamager());
+        if (fireball.get(ZombiesFireball.FIREBALL_WEAPON) != null) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler

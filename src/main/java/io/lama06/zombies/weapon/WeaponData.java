@@ -16,6 +16,7 @@ public final class WeaponData {
     public SoundData sound;
     public boolean inLuckyChest;
     public boolean isEnchanted;
+    public boolean isPoisoned;
 
     public WeaponData setDisplayName(final Component displayName) {
         this.displayName = displayName;
@@ -69,6 +70,12 @@ public final class WeaponData {
 
     public WeaponData setEnchanted() {
         isEnchanted = true;
+        return this;
+    }
+
+
+    public WeaponData setPoisoned() {
+        isPoisoned = true;
         return this;
     }
 

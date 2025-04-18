@@ -14,7 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-public class InteractWithUltimateMachine implements Listener {
+public final class InteractWithUltimateMachine implements Listener {
 
     @EventHandler
     private void onPlayerInteract(final PlayerInteractEvent event) {
@@ -66,6 +66,9 @@ public class InteractWithUltimateMachine implements Listener {
             case DOUBLE_BARREL_SHOTGUN -> WeaponType.DOUBLE_BARREL_SHOTGUN_ULTIMATE_1;
             case DOUBLE_BARREL_SHOTGUN_ULTIMATE_1 -> WeaponType.DOUBLE_BARREL_SHOTGUN_ULTIMATE_2;
             case DOUBLE_BARREL_SHOTGUN_ULTIMATE_2 -> WeaponType.DOUBLE_BARREL_SHOTGUN_ULTIMATE_3;
+            case BLOW_DART -> WeaponType.BLOW_DART_ULTIMATE;
+            case ZOMBIE_SOAKER -> WeaponType.ZOMBIE_SOAKER_ULTIMATE;
+            case ROCKET_LAUNCHER -> WeaponType.ROCKET_LAUNCHER_ULTIMATE;
             default -> null;
         };
         if (newWeapon == null) {
